@@ -32,7 +32,6 @@ jobs:
           --health-retries 5
 
     steps:
-
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
@@ -47,6 +46,12 @@ jobs:
        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
        sudo mv migrate /usr/bin/migrate
        which migrate
+    
+    - name: Wait for Postgres
+      run: |
+         until pg_isready -h localhost -p 5432; do
+           sleep 1
+         done
 
     - name: Run migrations
       run: make migrateup
