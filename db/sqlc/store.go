@@ -1,4 +1,3 @@
-// store.go
 package db
 
 import (
@@ -90,47 +89,9 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		if arg.FromAccountID < arg.ToAccountID {
-			// // Get and update the FromAccount balance
-			// fmt.Println(txName, "update account 1")
-			// result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			// 	ID:     arg.FromAccountID,
-			// 	Amount: -arg.Amount,
-			// })
-			// if err != nil {
-			// 	return err
-			// }
-
-			// // Get and update the ToAccount balance
-			// fmt.Println(txName, "update account 2")
-			// result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			// 	ID:     arg.ToAccountID,
-			// 	Amount: arg.Amount,
-			// })
-			// if err != nil {
-			// 	return err
-			// }
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
-
 		} else {
-			// fmt.Println(txName, "update account 2")
-			// result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			// 	ID:     arg.ToAccountID,
-			// 	Amount: arg.Amount,
-			// })
-			// if err != nil {
-			// 	return err
-			// }
-
-			// fmt.Println(txName, "update account 1")
-			// result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			// 	ID:     arg.FromAccountID,
-			// 	Amount: -arg.Amount,
-			// })
-			// if err != nil {
-			// 	return err
-			// }
-			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, -arg.Amount, arg.FromAccountID, -arg.Amount)
-
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
 		}
 
 		return nil
@@ -160,5 +121,4 @@ func addMoney(
 		Amount: amount2,
 	})
 	return
-
 }

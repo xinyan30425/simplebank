@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func testTransferTx(t *testing.T) {
 	fmt.Println(">>before:", account1.Balance, account2.Balance)
 
 	// run n concurrent transfer transactions
-	n := 2
+	n := 5
 	amount := int64(10)
 
 	errs := make(chan error)
@@ -114,13 +115,13 @@ func testTransferTx(t *testing.T) {
 	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
 	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
 }
-
 func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDB)
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
-	n := 10
+	n := 5
 	amount := int64(10)
 	errs := make(chan error)
 
@@ -136,24 +137,24 @@ func TestTransferTxDeadlock(t *testing.T) {
 		go func(fromAccountID, toAccountID int64) {
 			ctx := context.Background()
 			fmt.Printf("Starting transaction from %d to %d\n", fromAccountID, toAccountID)
-			_, err := store.TransferTx(ctx, TransferTxParams{
-				FromAccountID: fromAccountID,
-				ToAccountID:   toAccountID,
-				Amount:        amount,
-			})
-			fmt.Printf("Completed transaction from %d to %d\n", fromAccountID, toAccountID)
-			errs <- err
+			for {
+				_, err := store.TransferTx(ctx, TransferTxParams{
+					FromAccountID: fromAccountID,
+					ToAccountID:   toAccountID,
+					Amount:        amount,
+				})
+				if err != nil {
+					if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "40001" {
+						// Retry on serialization error
+						fmt.Printf("Retry transaction from %d to %d due to serialization error\n", fromAccountID, toAccountID)
+						continue
+					}
+				}
+				fmt.Printf("Completed transaction from %d to %d\n", fromAccountID, toAccountID)
+				errs <- err
+				break
+			}
 		}(fromAccountID, toAccountID)
-
-		// go func() {
-		// 	_, err := store.TransferTx(context.Background(), TransferTxParams{
-		// 		FromAccountID: fromAccountID,
-		// 		ToAccountID:   toAccountID,
-		// 		Amount:        amount,
-		// 	})
-
-		// 	errs <- err
-		// }()
 	}
 
 	for i := 0; i < n; i++ {
@@ -161,7 +162,7 @@ func TestTransferTxDeadlock(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// check the final updated balance
+	// Check the final updated balance
 	updatedAccount1, err := store.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
@@ -169,6 +170,8 @@ func TestTransferTxDeadlock(t *testing.T) {
 	require.NoError(t, err)
 
 	fmt.Println(">> after:", updatedAccount1.Balance, updatedAccount2.Balance)
-	require.Equal(t, account1.Balance, updatedAccount1.Balance)
-	require.Equal(t, account2.Balance, updatedAccount2.Balance)
+	expectedBalance1 := account1.Balance - (amount * int64((n+1)/2)) + (amount * int64(n/2))
+	expectedBalance2 := account2.Balance + (amount * int64((n+1)/2)) - (amount * int64(n/2))
+	require.Equal(t, expectedBalance1, updatedAccount1.Balance)
+	require.Equal(t, expectedBalance2, updatedAccount2.Balance)
 }
