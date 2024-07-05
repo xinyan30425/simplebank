@@ -1,3 +1,5 @@
+// store.go
+
 package db
 
 import (
@@ -6,19 +8,24 @@ import (
 	"fmt"
 )
 
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -42,16 +49,16 @@ type TransferTxParams struct {
 }
 
 type TransferTxResult struct {
-	Transfer    Transfer `json:"transfer"`
-	FromAccount Account  `json:"from_account"`
-	ToAccount   Account  `json:"to_account"`
-	FromEntry   Entry    `json:"from_entry"`
-	ToEntry     Entry    `json:"to_entry"`
+	Transfer    Transfers `json:"transfer"`
+	FromAccount Accounts  `json:"from_account"`
+	ToAccount   Accounts  `json:"to_account"`
+	FromEntry   Entries   `json:"from_entry"`
+	ToEntry     Entries   `json:"to_entry"`
 }
 
 var txKey = struct{}{}
 
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
@@ -107,7 +114,7 @@ func addMoney(
 	amount1 int64,
 	accountID2 int64,
 	amount2 int64,
-) (account1 Account, account2 Account, err error) {
+) (account1 Accounts, account2 Accounts, err error) {
 	account1, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
 		ID:     accountID1,
 		Amount: amount1,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/techschool/simplebank/util"
+	"github.com/xinyan30425/simplebank/util"
 
 	"testing"
 
@@ -18,7 +18,7 @@ func TestCreateAccount(t *testing.T) {
 
 }
 
-func createRandomAccount(t *testing.T) Account {
+func createRandomAccount(t *testing.T) Accounts {
 	arg := CreateAccountParams{
 		Owner:    util.RandomOwner(),
 		Balance:  util.RandomMoney(),
