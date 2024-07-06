@@ -10,8 +10,16 @@ dropdb:
 migrateup:
 	migrate -path db/migration -database "postgresql://root:mysecretpassword@localhost:5433/simple_bank?sslmode=disable" --verbose up
 
+migrateup1:
+	migrate -path db/migration -database "postgresql://root:mysecretpassword@localhost:5433/simple_bank?sslmode=disable" --verbose up 1
+
+
 migratedown:
 	migrate -path db/migration -database "postgresql://root:mysecretpassword@localhost:5433/simple_bank?sslmode=disable" --verbose down
+
+migratedown1:
+	migrate -path db/migration -database "postgresql://root:mysecretpassword@localhost:5433/simple_bank?sslmode=disable" --verbose down 1
+
 
 migrateforce:
 	migrate -path db/migration -database "postgresql://root:mysecretpassword@localhost:5433/simple_bank?sslmode=disable" force 1
