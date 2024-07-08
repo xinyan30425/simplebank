@@ -13,12 +13,6 @@ import (
 	db "github.com/xinyan30425/simplebank/db/sqlc"
 )
 
-// const (
-// 	dbDriver      = "postgres"
-// 	dbSource      = "postgresql://root:mysecretpassword@localhost:5433/simple_bank?sslmode=disable"
-// 	serverAddress = "0.0.0.0:8080"
-// )
-
 func main() {
 	config, err := util.LoadConfig(".")
 	if err != nil {
@@ -43,9 +37,10 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
+	fmt.Printf("Starting server at %s\n", config.ServerAddress) // Debug print
+
 	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("cannot start server:", err)
 	}
-
 }
