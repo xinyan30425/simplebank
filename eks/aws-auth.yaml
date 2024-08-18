@@ -10,7 +10,7 @@ data:
       groups:
         - system:masters
   mapUsers: |
-    - userarn: arn:aws:iam::730335262390:user/alladminuser
-      username: alladminuser
+    - userarn: arn:aws:iam::529088290413:user/github-ci
+      username: github-ci
       groups:
         - system:masters
