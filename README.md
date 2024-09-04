@@ -1,3 +1,133 @@
+# Simple Bank Service
+
+This project is a simple banking service API built using Go (Golang), Gin web framework, and PostgreSQL as the database. The service supports basic operations such as creating users, managing accounts, and performing money transfers between accounts. It also includes JWT-based authentication for secure access.
+
+## Table of Contents
+
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Server](#running-the-server)
+- [API Endpoints](#api-endpoints)
+- [Database Schema](#database-schema)
+- [UML Diagram](#uml-diagram)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- User management: Create, authenticate, and manage users.
+- Account management: Create, retrieve, and list accounts.
+- Money transfers: Perform secure money transfers between user accounts.
+- JWT authentication for secure access.
+- Unit and integration testing using Go's testing package and testify.
+
+## Project Structure
+
+The project is organized as follows:
+
+- `api/`: Contains the API endpoints and middleware.
+- `db/`: Database access logic using sqlc.
+- `token/`: JWT token management.
+- `util/`: Utility functions and configurations.
+- `main.go`: The main entry point of the application.
+- `Makefile`: Contains commands to build, test, and manage the database.
+
+## Getting Started
+
+### Prerequisites
+
+- Go 1.18 or later
+- Docker
+- PostgreSQL
+- Make
+
+### Installation
+
+1. Clone the repository:
+
+    ```sh
+    git clone https://github.com/xinyan30425/simplebank.git
+    cd simplebank
+    ```
+
+2. Start the PostgreSQL database using Docker:
+
+    ```sh
+    make postgres
+    ```
+
+3. Create the database:
+
+    ```sh
+    make createdb
+    ```
+
+4. Apply database migrations:
+
+    ```sh
+    make migrateup
+    ```
+
+5. Run the server:
+
+    ```sh
+    make server
+    ```
+
+### Running the Server
+
+Run the server using:
+
+```sh
+go run main.go
+
+```plantuml
+@startuml
+
+class User {
+  - username: string
+  - hashed_password: string
+  - email: string
+  - full_name: string
+  - created_at: timestamptz
+}
+
+class Account {
+  - id: bigint
+  - owner: string
+  - balance: bigint
+  - currency: string
+  - created_at: timestamptz
+}
+
+class Entry {
+  - id: bigint
+  - account_id: bigint
+  - amount: bigint
+  - created_at: timestamptz
+}
+
+class Transfer {
+  - id: bigint
+  - from_account_id: bigint
+  - to_account_id: bigint
+  - amount: bigint
+  - created_at: timestamptz
+}
+
+User "1" -- "0..*" Account : owns
+Account "1" -- "0..*" Entry : has
+Account "1" -- "0..*" Transfer : initiates/receives
+
+@enduml
+
+
+
+
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/golang-migrate/migrate/ci.yaml?branch=master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
 [![GoDoc](https://pkg.go.dev/badge/github.com/golang-migrate/migrate)](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)
 [![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
