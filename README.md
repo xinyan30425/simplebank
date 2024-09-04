@@ -84,45 +84,10 @@ Run the server using:
 
 ```sh
 go run main.go
+
 ```
-@startuml
-
-class User {
-  - username: string
-  - hashed_password: string
-  - email: string
-  - full_name: string
-  - created_at: timestamptz
-}
-
-class Account {
-  - id: bigint
-  - owner: string
-  - balance: bigint
-  - currency: string
-  - created_at: timestamptz
-}
-
-class Entry {
-  - id: bigint
-  - account_id: bigint
-  - amount: bigint
-  - created_at: timestamptz
-}
-
-class Transfer {
-  - id: bigint
-  - from_account_id: bigint
-  - to_account_id: bigint
-  - amount: bigint
-  - created_at: timestamptz
-}
-
-User "1" -- "0..*" Account : owns
-Account "1" -- "0..*" Entry : has
-Account "1" -- "0..*" Transfer : initiates/receives
-
-@enduml
+## UML Diagram
+![UML Diagram](UML.png)
 
 
 ### 
