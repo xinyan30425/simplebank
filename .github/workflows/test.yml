@@ -1,3 +1,7 @@
+# The workflow is triggered by two events:
+#   A push to the main branch.
+#   A pull request to the main branch.
+
 name: ci-test
 
 on:

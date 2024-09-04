@@ -1,4 +1,6 @@
 # This workflow is triggered by a push to the main branch
+# The actual process of building a Docker image is done by the docker build command, 
+# which reads the instructions from a Dockerfile and creates a Docker image.
 
 name: Deploy to production
 
