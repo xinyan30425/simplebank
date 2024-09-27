@@ -90,6 +90,7 @@ go run main.go
 ![UML Diagram](UML.png)
 
 ### System Architecture UML Diagram
+![UML Diagram](System_architecture.png)
 
 ```plantuml
 @startuml
