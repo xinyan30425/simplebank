@@ -89,6 +89,80 @@ go run main.go
 ## UML Diagram
 ![UML Diagram](UML.png)
 
+### System Architecture UML Diagram
+
+```plantuml
+@startuml
+
+actor User
+actor GitHub_CI_CD as "GitHub Actions CI/CD"
+
+package "AWS EKS Cluster 1" {
+    component AccountService {
+        + HTTP: 8080
+        + gRPC: 9090
+        + Admin: 7070
+    }
+    component TransactionService {
+        + HTTP: 8080
+        + gRPC: 9090
+        + Admin: 7070
+    }
+    component NotificationService {
+        + HTTP: 8080
+        + gRPC: 9090
+        + Admin: 7070
+    }
+
+    node Kubernetes {
+        component Docker {
+            Docker -> AccountService
+            Docker -> TransactionService
+            Docker -> NotificationService
+        }
+    }
+
+    AccountService <--> TransactionService : gRPC
+    TransactionService <--> NotificationService : gRPC
+}
+
+package "AWS EKS Cluster 2" {
+    component AccountService2 as AccountService
+    component TransactionService2 as TransactionService
+    component NotificationService2 as NotificationService
+
+    node Kubernetes2 {
+        component Docker2 as Docker {
+            Docker2 -> AccountService2
+            Docker2 -> TransactionService2
+            Docker2 -> NotificationService2
+        }
+    }
+
+    AccountService2 <--> TransactionService2 : gRPC
+    TransactionService2 <--> NotificationService2 : gRPC
+}
+
+database Redis {
+    AccountService --> Redis : Cache Read/Write
+    TransactionService --> Redis : Cache Read/Write
+}
+
+cloud Kafka {
+    AccountService -> Kafka : Publish Transaction Events
+    Kafka -> TransactionService : Consume Transaction Events
+}
+
+component JWT {
+    User -> JWT : Authenticate
+    JWT -> AccountService
+    JWT -> TransactionService
+}
+
+GitHub_CI_CD -> Kubernetes : Deploy Microservices
+
+@enduml
+
 
 ### 
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/golang-migrate/migrate/ci.yaml?branch=master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
